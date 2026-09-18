@@ -1,4 +1,34 @@
-"""ECAL reconstructed-minus-TC residuals; shared hits correlate the estimators."""
+"""ECAL reconstructed-minus-TC residuals; shared hits correlate the estimators.
+
+The ecal_gaps workflow runs this analysis for all three ECALs. For MCParticles
+index zero, it requires exactly one associated truth cluster and selects the
+nearest electron-associated standard cluster on the subsystem surface.
+Energy residuals are (E_reco-E_TC)/E_TC; endcap position residuals are
+reconstructed minus TC x/y. Barrel residuals are TC radius times wrapped
+reco-minus-TC azimuth and reco-minus-TC z, with matching in these two surface
+coordinates rather than endcap x/y.
+
+Default matching cuts are 50 mm backward/barrel and 200 mm forward when
+analyzing all subsystems. These detector-specific cuts are provisional
+matching-quality selections, not definitions of intrinsic resolution. The
+forward choice is motivated by the 5 GeV generated-eta cut scan, where remaining
+distance failures are concentrated toward the transition region; 500 MeV
+results require separate interpretation.
+
+Central-68% half-widths and all exclusion counts are saved. Shared hits and
+different log-weight bases make these agreement widths, not independent
+detector resolutions. The matching fraction includes tiny incidental TC
+deposits and is not an electron efficiency. The barrel truth-guided merger is
+not an independent hit-level truth clustering algorithm, so correlations can
+produce very narrow or exactly zero residuals. Results are labelled separately.
+
+Configure matching cuts with Snakemake, for example:
+    --config ecal_gaps_match_radius_mm=30 ecal_gaps_forward_match_radius_mm=150
+or with --match-radius-mm and --forward-match-radius-mm when analyzing all
+subsystems. With --inputs, --match-radius-mm sets the cut for the selected
+single subsystem (default 50 mm). Changing cuts only requires analysis to be
+rerun, not simulation or reconstruction.
+"""
 import argparse
 import glob
 import json

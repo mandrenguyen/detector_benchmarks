@@ -58,56 +58,6 @@ output_dir.mkdir(parents=True, exist_ok=True)
 
 * Analysis
 
-** Truth-cluster integrity diagnostics
-
-The workflow also runs =truth_clusters.py= on the same reconstructed electron
-samples. It uses explicit cluster-to-MC-particle association indices, deduplicates
-cluster links, and reports zero/one/multiple associated clusters versus eta.
-Summed and largest associated-cluster energy responses are shown separately,
-along with the largest-cluster fraction, so fragmentation is not hidden by an
-energy sum. Numerical results are saved in JSON and per-sample NPZ files.
-
-The reference particle is =MCParticles[0]= only for these particle-gun samples.
-The association helper accepts an arbitrary MCParticles index, allowing future
-DIS callers to supply the selected scattered electron. Full cluster energies
-are counted, not association-weighted contributions. Missing associations are
-retained as zero response. Outside a subsystem's acceptance, zero associations
-are expected and should not be interpreted as inefficiency.
-
-Backward/forward truth clusters and merged barrel truth clusters may use
-different algorithms. The barrel output is labelled =EcalBarrel=, not ScFi or
-imaging separately. These clean samples establish a baseline; they do not test
-whether fragmentation under beam-background overlay has been fixed. No
-truth-cluster position is used as a reference for angular resolution here.
-
-The workflow additionally runs =truth_cluster_residuals.py= for all three ECALs.
-For MCParticles index zero, it requires exactly one associated truth cluster
-and selects the nearest electron-associated standard cluster in transverse
-position, within 50 mm backward and 200 mm forward. Energy residuals are =(E_reco-E_TC)/E_TC=; endcap position
-residuals are reconstructed minus TC x/y. Barrel residuals are TC radius times
-wrapped reco-minus-TC azimuth and reco-minus-TC z, with matching in these two
-surface coordinates.
-Barrel matching uses a 50 mm cut. These detector-specific cuts are provisional
-matching-quality selections, not definitions of intrinsic resolution. The
-forward 200 mm choice is motivated by the 5 GeV generated-eta cut scan, where
-remaining distance failures are concentrated toward the transition region;
-500 MeV results require separate interpretation.
-Central-68% half-widths and all
-exclusion counts are saved. Shared hits and different log-weight bases make
-these agreement widths, not independent detector resolutions. The matching
-fraction includes tiny incidental TC deposits and is not an electron efficiency.
-Endcap x/y matching is not used for the barrel. Its truth-guided merger is
-not an independent hit-level truth clustering algorithm, so correlations can
-produce very narrow or exactly zero residuals. Results are labelled separately.
-
-The matching cut is configurable with Snakemake
-=--config ecal_gaps_match_radius_mm=30 ecal_gaps_forward_match_radius_mm=150=
-(defaults 50 mm backward/barrel and 200 mm forward), or with the analysis
-script's =--match-radius-mm= and =--forward-match-radius-mm= options when
-analyzing all subsystems. With =--inputs=, =--match-radius-mm= sets the cut
-for the selected single subsystem. Changing it only requires analysis to be
-rerun, not simulation or reconstruction.
-
 #+begin_src jupyter-python :results silent
 def filter_name(name):
     return (

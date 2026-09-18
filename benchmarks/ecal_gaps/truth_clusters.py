@@ -4,6 +4,24 @@ Association indices, not association row order, identify clusters and particles.
 Multiple links to the same cluster are deduplicated. Cluster energy is counted
 in full, not weighted by association weight: these are association diagnostics,
 not a decomposition of shared-cluster energy into particle contributions.
+
+The ecal_gaps workflow runs this analysis on reconstructed electron samples
+and reports zero/one/multiple associated truth clusters versus generated eta.
+Summed and largest associated-cluster energy responses and the largest-cluster
+fraction are shown separately, so fragmentation is not hidden by an energy sum.
+Numerical results are saved in JSON and per-sample NPZ files.
+
+The reference particle is MCParticles[0] only for these particle-gun samples.
+The association helper accepts an arbitrary MCParticles index, allowing future
+DIS callers to supply the selected scattered electron. Missing associations are
+retained as zero response. Outside a subsystem's acceptance, zero associations
+are expected and should not be interpreted as inefficiency.
+
+Backward/forward truth clusters and merged barrel truth clusters may use
+different algorithms. The barrel output is labelled EcalBarrel, not ScFi or
+imaging separately. These clean samples establish a baseline; they do not test
+whether fragmentation under beam-background overlay has been fixed. No
+truth-cluster position is used as a reference for angular resolution here.
 """
 
 import argparse
