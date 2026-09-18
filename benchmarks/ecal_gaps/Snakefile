@@ -59,7 +59,7 @@ rule ecal_gaps_recon:
 set -m # monitor mode to prevent lingering processes
 exec env DETECTOR_CONFIG={params.DETECTOR_CONFIG} \
   eicrecon {input.sim} -Ppodio:output_file={output} \
-  -Ppodio:output_collections=EcalEndcapNRecHits,EcalBarrelScFiRecHits,EcalBarrelImagingRecHits,EcalEndcapPRecHits,MCParticles
+  -Ppodio:output_collections=EcalEndcapNRecHits,EcalBarrelScFiRecHits,EcalBarrelImagingRecHits,EcalEndcapPRecHits,MCParticles,EcalEndcapNTruthClusters,EcalEndcapNTruthClusterAssociations,EcalBarrelTruthClusters,EcalBarrelTruthClusterAssociations,EcalEndcapPTruthClusters,EcalEndcapPTruthClusterAssociations,EcalEndcapNClusters,EcalEndcapNClusterAssociations,EcalEndcapPClusters,EcalEndcapPClusterAssociations,EcalBarrelClusters,EcalBarrelClusterAssociations
 """
 
 
@@ -67,6 +67,8 @@ rule ecal_gaps:
     input:
         matplotlibrc=".matplotlibrc",
         script="benchmarks/ecal_gaps/ecal_gaps.org2py.py",
+        truth_script=workflow.source_path("truth_clusters.py"),
+        residual_script=workflow.source_path("truth_cluster_residuals.py"),
         # TODO pass as a file list?
         _=expand(
             "sim_output/ecal_gaps/{{DETECTOR_CONFIG}}/{PARTICLE}/{ENERGY}/{PHASE_SPACE}/{PARTICLE}_{ENERGY}_{PHASE_SPACE}.{INDEX:04d}.eicrecon.edm4eic.root",
@@ -81,6 +83,9 @@ rule ecal_gaps:
         scheduler=".logs/results/{DETECTOR_CONFIG}/ecal_gaps/scheduler.log",
         worker=".logs/results/{DETECTOR_CONFIG}/ecal_gaps/worker.log",
     threads: workflow.cores
+    params:
+        match_radius_mm=config.get("ecal_gaps_match_radius_mm", 50),
+        forward_match_radius_mm=config.get("ecal_gaps_forward_match_radius_mm", 200),
     singularity: EIC_SINGULARITY_CONTAINER,
     shell:
         """
@@ -102,4 +107,6 @@ MATPLOTLIBRC={input.matplotlibrc} \
 OUTPUT_DIR={output} \
 DETECTOR_CONFIG={wildcards.DETECTOR_CONFIG} \
 python {input.script}
+python {input.truth_script} --detector-config {wildcards.DETECTOR_CONFIG} --output-dir {output}
+python {input.residual_script} --output-dir {output} --detector-config {wildcards.DETECTOR_CONFIG} --match-radius-mm {params.match_radius_mm} --forward-match-radius-mm {params.forward_match_radius_mm}
 """
